@@ -1,0 +1,39 @@
+name: 'Deploy odoc Documentation'
+description: 'GitHub Action to deploy odoc documentation'
+author: 'Nicolas “Niols” Jeannerod <niols@niols.fr>'
+
+branding:
+  icon: 'terminal'
+  color: 'blue'
+
+inputs:
+
+  GENERATED_DOC_DIR:
+    description: 'Directory where to find the generated odoc documentation'
+    required: true
+
+  COMMIT_MESSAGE:
+    description: 'Commit message on the documentations branch'
+    required: false
+    default: 'Auto-deploy from GitHub Action #$GITHUB_RUN_NUMBER'
+
+  DOCUMENTATION_BRANCH:
+    description: 'Branch on which to push the documentation'
+    required: false
+    default: documentation
+
+  DOCUMENTATION_DIRECTORY:
+    description: 'Directory in which to put the documentation on the documentation branch'
+    required: false
+    default: docs/
+
+runs:
+  using: 'composite'
+  steps:
+    - shell: bash
+      run: |
+        export GENERATED_DOC_DIR="${{inputs.GENERATED_DOC_DIR}}"
+        export COMMIT_MESSAGE="${{inputs.COMMIT_MESSAGE}}"
+        export DOC_BRANCH="${{inputs.DOCUMENTATION_BRANCH}}"
+        export TARGET_DOC_DIR="${{inputs.DOCUMENTATION_DIRECTORY}}"
+        $GITHUB_ACTION_PATH/script.sh
