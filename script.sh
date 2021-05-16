@@ -48,6 +48,10 @@ if [ "$REF_KIND" = branch ]; then
     echo "$GITHUB_SHA" > "$commit_hash_target"
 fi
 
+date_target=$target/date
+printf 'Write the date to `%s`.\n' "$date_target"
+date +%s > "$date_target"
+
 ## Replace the index of the newly-added documentation by a redirection to the
 ## global index.
 
