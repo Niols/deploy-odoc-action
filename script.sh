@@ -42,11 +42,9 @@ rm -rf "$target"
 mkdir -p "$target"
 mv "$TMPDIR"/* "$target"
 
-if [ "$REF_KIND" = branch ]; then
-    commit_hash_target=$target/commit-hash
-    printf 'The reference is a branch, so we write the commit hash to `%s`.\n' "$commit_hash_target"
-    echo "$GITHUB_SHA" > "$commit_hash_target"
-fi
+commit_hash_target=$target/commit-hash
+printf 'Write the commit hash to `%s`.\n' "$commit_hash_target"
+echo "$GITHUB_SHA" > "$commit_hash_target"
 
 date_target=$target/date
 printf 'Write the date to `%s`.\n' "$date_target"
@@ -73,31 +71,54 @@ EOF
 
 printf '(Re)generate the global index page.\n'
 rm -f "$TARGET_DOC_DIR"/index.html
+
 {
+    print_table () {
+        printf '<tr class="head"><td class="name">%s</td><td>Commit</td><td>Date</td><td>Libraries</td></tr>\n' "$1"
+
+        ls -1 "$TARGET_DOC_DIR"/"$2" | {
+            while read -r ref; do
+                printf '%s\t%s\n' "$(cat "$TARGET_DOC_DIR"/"$2"/"$ref"/date)" "$ref"
+            done
+        } | sort -rn | cut -f 2 | {
+            while read -r ref; do
+                hash=$(cat "$TARGET_DOC_DIR"/"$2"/"$ref"/commit-hash)
+                date=$(cat "$TARGET_DOC_DIR"/"$2"/"$ref"/date)
+                libs=$(
+                    for lib in "$TARGET_DOC_DIR"/"$2"/"$ref"/*; do
+                        if [ -d "$lib" ]; then
+                            basename "$lib"
+                        fi
+                    done
+                    )
+                nb_libs=$(echo "$libs" | wc -l)
+                lib=$(echo "$libs" | head -n 1)
+                libs=$(echo "$libs" | tail -n +2)
+
+                if [ "$nb_libs" -eq 1 ]; then
+                    rowspan=
+                else
+                    rowspan=$(printf ' rowspan="%s"' "$nb_libs")
+                fi
+
+                printf '<tr>'
+                printf '<td%s class="name">%s</td>' "$rowspan" "$ref"
+                printf '<td%s class="commit-hash">%s</td>' "$rowspan" "$(echo "$hash" | head -c 7)"
+                printf '<td%s class="date">%s</td>' "$rowspan" "$(date -d @"$date" +'%b %d, %Y')"
+                printf '<td class="link"><a href="%s">%s</a></td>' "$2"/"$ref"/"$lib" "$lib"
+                printf '</tr>\n'
+
+                printf '%s' "$libs" | while read -r lib; do
+                    printf '<tr><td class="link"><a href="%s">%s</a></td></tr>\n' "$2"/"$ref"/"$lib" "$lib"
+                done
+            done
+        }
+    }
+
     cat "$GITHUB_ACTION_PATH"/index-header.html
-    printf '<h3>Tags</h3><ul>'
 
-    ls -1 "$TARGET_DOC_DIR"/tag | sort -rn | \
-        while read -r ref; do
-            for lib in "$TARGET_DOC_DIR/tag/$ref"/*; do
-                if [ -d "$lib" ]; then
-                    lib=$(basename "$lib")
-                    printf '<li><span class="version">%s</span> <a href="%s">%s</a></li>' "$ref" "tag/$ref/$lib/index.html" "$lib"
-                fi
-            done
-        done
-
-    printf '</ul><h3>Branches</h3><ul>'
-
-    ls -1 "$TARGET_DOC_DIR"/branch | sort | \
-        while read -r ref; do
-            for lib in "$TARGET_DOC_DIR/branch/$ref"/*; do
-                if [ -d "$lib" ]; then
-                    lib=$(basename "$lib")
-                    printf '<li><span class="version">%s@%s</span> <a href="%s">%s</a></li>' "$ref" "$(cat "$TARGET_DOC_DIR/branch/$ref/commit-hash" | head -c 7)" "branch/$ref/$lib/index.html" "$lib"
-                fi
-            done
-        done
+    print_table 'Tags' tag
+    print_table 'Branches' branch
 
     cat "$GITHUB_ACTION_PATH"/index-footer.html
 } > "$TARGET_DOC_DIR"/index.html

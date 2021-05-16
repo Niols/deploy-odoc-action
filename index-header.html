@@ -1,11 +1,11 @@
 <!DOCTYPE html>
-<html xmlns="http://www.w3.org/1999/xhtml">
+<html lang="en" xmlns="http://www.w3.org/1999/xhtml">
     <head>
         <title>Documentation</title>
         <meta charset="utf-8"/>
         <meta name="viewport" content="width=device-width,initial-scale=1.0"/>
 
-        <style type="text/css">
+        <style>
          body {
              font-family: "Fira Sans", Helvetica, Arial, sans-serif;
              text-align: left;
@@ -23,17 +23,33 @@
              padding-left: 10px;
          }
 
-         span.version {
-             font-family: "Fira Mono", courier;
-             color: #aaaaaa;
-         }
-         .version:before { content: "["; }
-         .version:after  { content: "]"; }
-
          a { color: #2C5CBD; }
+
+         table {
+             margin-top: -20px;
+             border-collapse: collapse;
+             width: 100%;
+         }
+
+         tr {
+             border-bottom: 1px solid lightgray;
+         }
+
+         td {
+             padding: 3px 10px;
+         }
+
+         .head td {
+             font-weight: bolder;
+         }
+
+         .head td {
+             padding-top: 30px;
+         }
         </style>
     </head>
     <body>
         <main class="content">
             <div class="by-name">
                 <h2>Documentation</h2>
+                <table>
