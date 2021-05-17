@@ -82,8 +82,6 @@ rm -f "$TARGET_DOC_DIR"/index.html
             done
         } | sort -rn | cut -f 2 | {
             while read -r ref; do
-                hash=$(cat "$TARGET_DOC_DIR"/"$2"/"$ref"/commit-hash)
-                date=$(cat "$TARGET_DOC_DIR"/"$2"/"$ref"/date)
                 libs=$(
                     for lib in "$TARGET_DOC_DIR"/"$2"/"$ref"/*; do
                         if [ -d "$lib" ]; then
@@ -91,21 +89,27 @@ rm -f "$TARGET_DOC_DIR"/index.html
                         fi
                     done
                     )
+
                 nb_libs=$(echo "$libs" | wc -l)
                 lib=$(echo "$libs" | head -n 1)
                 libs=$(echo "$libs" | tail -n +2)
 
-                if [ "$nb_libs" -eq 1 ]; then
-                    rowspan=
-                else
-                    rowspan=$(printf ' rowspan="%s"' "$nb_libs")
-                fi
+                hash=$(cat "$TARGET_DOC_DIR"/"$2"/"$ref"/commit-hash)
+                hash=$(echo "$hash" | head -c 7)
+
+                [ "$2" = tag ] && tree_link=$ref || tree_link=$hash
+                tree_link=$(printf '%s/%s/tree/%s' "$GITHUB_SERVER_URL" "$GITHUB_REPOSITORY" "$tree_link")
+
+                doc_link=$2/$ref/$lib
+
+                date=$(cat "$TARGET_DOC_DIR"/"$2"/"$ref"/date)
+                date=$(date -d @"$date" +'%b %d, %Y')
 
                 printf '<tr>'
-                printf '<td%s class="name">%s</td>' "$rowspan" "$ref"
-                printf '<td%s class="commit-hash">%s</td>' "$rowspan" "$(echo "$hash" | head -c 7)"
-                printf '<td%s class="date">%s</td>' "$rowspan" "$(date -d @"$date" +'%b %d, %Y')"
-                printf '<td class="link"><a href="%s">%s</a></td>' "$2"/"$ref"/"$lib" "$lib"
+                printf '<td rowspan="%d" class="name">%s</td>' "$nb_libs" "$ref"
+                printf '<td rowspan="%d" class="commit-hash"><a href="%s">%s</a></td>' "$nb_libs" "$tree_link" "$hash"
+                printf '<td rowspan="%d" class="date">%s</td>' "$nb_libs" "$date"
+                printf '<td class="link"><a href="%s">%s</a></td>' "$doc_link" "$lib"
                 printf '</tr>\n'
 
                 printf '%s' "$libs" | while read -r lib; do
