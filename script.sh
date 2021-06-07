@@ -112,7 +112,7 @@ rm -f "$TARGET_DOC_DIR"/index.html
                 printf '<td class="link"><a href="%s">%s</a></td>' "$doc_link" "$lib"
                 printf '</tr>\n'
 
-                printf '%s' "$libs" | while read -r lib; do
+                echo "$libs" | while read -r lib; do
                     printf '<tr><td class="link"><a href="%s">%s</a></td></tr>\n' "$2"/"$ref"/"$lib" "$lib"
                 done
             done
