@@ -90,7 +90,11 @@ rm -f "$TARGET_DOC_DIR"/index.html
                     done
                     )
 
-                nb_libs=$(echo "$libs" | wc -l)
+                if [ -n "$libs" ] ; then
+                    nb_libs=$(echo "$libs" | wc -l)
+                else
+                    nb_libs=0
+                fi
                 lib=$(echo "$libs" | head -n 1)
                 libs=$(echo "$libs" | tail -n +2)
 
@@ -112,9 +116,11 @@ rm -f "$TARGET_DOC_DIR"/index.html
                 printf '<td class="link"><a href="%s">%s</a></td>' "$doc_link" "$lib"
                 printf '</tr>\n'
 
-                echo "$libs" | while read -r lib; do
-                    printf '<tr><td class="link"><a href="%s">%s</a></td></tr>\n' "$2"/"$ref"/"$lib" "$lib"
-                done
+                if [ -n "$libs" ]; then
+                    echo "$libs" | while read -r lib; do
+                        printf '<tr><td class="link"><a href="%s">%s</a></td></tr>\n' "$2"/"$ref"/"$lib" "$lib"
+                    done
+                fi
             done
         }
     }
